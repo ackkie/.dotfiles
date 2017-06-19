@@ -1,0 +1,19 @@
+[user]
+	name = user
+	email = user@domain
+[alias]
+	br = branch
+	ci = commit
+	co = checkout
+	st = status
+	graph=log --graph --oneline --decorate=full
+[color]
+	ui = auto
+[core]
+	autocrlf = false
+	editor = vim
+	safecrlf = true
+[credential]
+	helper = cache --timeout=3600
+[push]
+	default = current
