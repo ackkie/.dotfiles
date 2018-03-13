@@ -1,10 +1,9 @@
-;; キーボード関連
+;;; キーボード関連
 ;; ナローイング
 ;; C-x n n
 ;; ワイデン
 ;; C-x n w
 ;;
-;; 改行、エンコーディング変換
 ;; C-x RET f
 
 ;; init.el　再ロード
@@ -14,6 +13,8 @@
 ;; 天気
 ;; M-x w3m-weather
 
+;; load-file-name指定があるときにそのディレクトリ内に閉じ込める
+;;emacs -q -l ~/path/to/somewhere/init.el
 (when load-file-name
   (setq user-emacs-directory (file-name-directory load-file-name)))
 
