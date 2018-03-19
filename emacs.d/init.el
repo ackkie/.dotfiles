@@ -4,6 +4,7 @@
 ;; ワイデン
 ;; C-x n w
 ;;
+;;; 改行、エンコーディング変換
 ;; C-x RET f
 
 ;; init.el　再ロード
@@ -25,11 +26,8 @@
     helm
     image+
     magit
-    migemo
     neotree
     use-package
-    w3m
-    win-switch
     php-mode
     web-mode
     yaml-mode)
@@ -45,11 +43,8 @@
         (helm . "melpa-stable")
         (image+ . "melpa-stable")
         (magit . "melpa-stable")
-        (migemo . "melpa-stable")
         (neotree . "melpa-stable")
         (use-package . "melpa-stable")
-        (w3m . "melpa-stable")
-        (win-switch . "melpa-stable")
         (php-mode . "melpa-stable")
         (web-mode . "melpa-stable")
         (yaml-mode . "melpa-stable")))
@@ -66,18 +61,10 @@
 
 (keyboard-translate ?\C-h ?\C-?)
 (bind-key "M-g" 'goto-line)
-;;(bind-key "C-x g" 'magit-status)
 (bind-key "M-q" 'query-replace-regexp)
 (bind-key "M-r" 'replace-regexp)
 (bind-key "M-e" 'eval-buffer)
 
-(setq browse-url-browser-function 'w3m-browse-url)
-(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-;; optional keyboard short-cut
-(global-set-key "\C-xm" 'browse-url-at-point)
-(setq w3m-use-cookies t)
-
-(setq w3m-weather-default-area "神奈川県・東部")
 
 ;; バッファの同一ファイル名を区別する(デフォルトパッケージ)
 ;;(require 'uniquify)
@@ -97,10 +84,6 @@
 ;;; 現在行を目立たせる
 (global-hl-line-mode)
 
-(require 'win-switch)
-;;; 0.75秒間受け付けるタイマー
-(setq win-switch-idle-time 0.75)
-(win-switch-setup-keys-ijkl "\C-xo")
 
 (require 'neotree)
 (global-set-key [f8] 'neotree-toggle)
@@ -112,17 +95,9 @@
 ;; neotree でファイルを新規作成した後、自動的にファイルを開く
 (setq neo-create-file-auto-open t)
 
-(require 'migemo)
-(setq migemo-command "cmigemo")
-(setq migemo-options '("-q" "--emacs"))
 
 ;; 辞書ファイルを環境に合わせて設定してください！
-(setq migemo-dictionary "/usr/share/cmigemo/utf-8/migemo-dict")
 
-(setq migemo-user-dictionary nil)
-(setq migemo-regex-dictionary nil)
-(setq migemo-coding-system 'utf-8-unix)
-(migemo-init)
 
 ;; 日本語
 ;;先にかかないとだめかも
@@ -176,3 +151,13 @@
   )
 (add-hook 'c-mode-hook 'my-c-c++-mode-init)
 (add-hook 'c++-mode-hook 'my-c-c++-mode-init)
+
+;;perl-mode の代わりに cperl-mode を使用
+;; (defalias 'perl-mode 'cperl-mode)
+(setq cperl-indent-level 4)
+(setq cperl-highlight-variables-indiscriminately t)
+(setq cperl-merge-trailing-else nil)
+
+
+;; diffのバッファを上下ではなく左右に並べる
+(setq ediff-split-window-function 'split-window-horizontally)
