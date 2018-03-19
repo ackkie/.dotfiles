@@ -1,12 +1,12 @@
 [user]
-	name = user
-	email = user@domain
+	useConfigOnly = true
 [alias]
 	br = branch
 	ci = commit
 	co = checkout
 	st = status
 	graph=log --graph --oneline --decorate=full
+	logall=log --oneline --decorate --graph --branches --tags --remotes
 [color]
 	ui = auto
 [core]
