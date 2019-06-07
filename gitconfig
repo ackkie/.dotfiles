@@ -1,9 +1,8 @@
-[user]
-	useConfigOnly = true
 [alias]
 	br = branch
 	ci = commit
 	co = checkout
+	sb = show-branch
 	st = status
 	graph=log --graph --oneline --decorate=full
 	logall=log --oneline --decorate --graph --branches --tags --remotes
@@ -14,6 +13,10 @@
 	editor = vim
 	safecrlf = true
 [credential]
-	helper = cache --timeout=3600
+	helper = cache --timeout=43200
+[diff]
+	algorithm = histogram
 [push]
 	default = current
+[user]
+	useConfigOnly = true
