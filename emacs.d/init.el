@@ -4,6 +4,7 @@
 ;; ワイデン
 ;; C-x n w
 ;;
+;;; 改行、エンコーディング変換
 ;; C-x RET f
 
 ;; init.el　再ロード
@@ -176,3 +177,13 @@
   )
 (add-hook 'c-mode-hook 'my-c-c++-mode-init)
 (add-hook 'c++-mode-hook 'my-c-c++-mode-init)
+
+;;perl-mode の代わりに cperl-mode を使用
+;; (defalias 'perl-mode 'cperl-mode)
+(setq cperl-indent-level 4)
+(setq cperl-highlight-variables-indiscriminately t)
+(setq cperl-merge-trailing-else nil)
+
+
+;; diffのバッファを上下ではなく左右に並べる
+(setq ediff-split-window-function 'split-window-horizontally)
