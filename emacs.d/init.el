@@ -1,4 +1,6 @@
 ;;; キーボード関連
+;; describe-bindings
+
 ;; ナローイング
 ;; C-x n n
 ;; ワイデン
@@ -11,83 +13,101 @@
 ;; M-x eval-buffer
 ;; テーマ変更
 ;; M-x customize-themes
-;; 天気
-;; M-x w3m-weather
 
-;; load-file-name指定があるときにそのディレクトリ内に閉じ込める
-;;emacs -q -l ~/path/to/somewhere/init.el
-(when load-file-name
-  (setq user-emacs-directory (file-name-directory load-file-name)))
+;; see http://ctags.sourceforge.net/ctags.html
+;; ctags -Re --languages=Perl
+;; M-. or C-x 4 .
+;; M-* or pop-tag-mark
+;; C-u M-.
 
-;;; MELPA
-(defvar my-favorite-package-list
-  '(auto-complete
-    bind-key
-    helm
-    image+
-    magit
-    migemo
-    neotree
-    use-package
-    w3m
-    win-switch
-    php-mode
-    web-mode
-    yaml-mode)
-  "packages to be installed")
+;; straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
-(package-initialize)
-(setq package-pinned-packages
-      '((auto-complete . "melpa-stable")
-        (bind-key . "melpa-stable")
-        (helm . "melpa-stable")
-        (image+ . "melpa-stable")
-        (magit . "melpa-stable")
-        (migemo . "melpa-stable")
-        (neotree . "melpa-stable")
-        (use-package . "melpa-stable")
-        (w3m . "melpa-stable")
-        (win-switch . "melpa-stable")
-        (php-mode . "melpa-stable")
-        (web-mode . "melpa-stable")
-        (yaml-mode . "melpa-stable")))
-(unless package-archive-contents (package-refresh-contents))
-(dolist (pkg my-favorite-package-list)
-  (unless (package-installed-p pkg)
-    (package-install pkg)))
+;; use-packageをインストールする
+(straight-use-package 'use-package)
+
+;; オプションなしで自動的にuse-packageをstraight.elにフォールバックする
+;; 本来は (use-package hoge :straight t) のように書く必要がある
+(setq straight-use-package-by-default t)
 
 
-(load-theme 'adwaita t)
-(enable-theme 'adwaita)
+(use-package bind-key)
 
-(require 'use-package)
 
-(keyboard-translate ?\C-h ?\C-?)
-(bind-key "M-g" 'goto-line)
-;;(bind-key "C-x g" 'magit-status)
-(bind-key "M-q" 'query-replace-regexp)
-(bind-key "M-r" 'replace-regexp)
-(bind-key "M-e" 'eval-buffer)
+(use-package git-gutter
+  :init
+  (when (window-system)
+	(use-package git-gutter-fringe))
+  (global-git-gutter-mode))
 
-(setq browse-url-browser-function 'w3m-browse-url)
-(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-;; optional keyboard short-cut
-(global-set-key "\C-xm" 'browse-url-at-point)
-(setq w3m-use-cookies t)
 
-(setq w3m-weather-default-area "神奈川県・東部")
+;; --- go mode
 
-;; バッファの同一ファイル名を区別する(デフォルトパッケージ)
-;;(require 'uniquify)
-;;(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
-(use-package uniquify
+;;(use-package exec-path-from-shell)
+(use-package auto-complete)
+(use-package flycheck) 
+
+(use-package go-autocomplete)
+
+(use-package go-mode
   :config
-  (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
-  (setq uniquify-ignore-buffers-re "*[^*]+*")
-  )
+  (bind-keys :map go-mode-map
+			 ("M-." . godef-jump)
+			 ("M-j" . godef-jump-other-window)
+			 ("M-," . pop-tag-mark))
+  (add-hook 'go-mode-hook '(lambda () (setq tab-width 2)))
+  (setq gofmt-command "goimports")
+  (add-hook 'before-save-hook 'gofmt-before-save))
+
+(use-package go-eldoc
+  :config
+  (add-hook 'go-mode-hook 'go-eldoc-setup))
+
+(use-package go-dlv)
+
+
+;; godef-jump C-cC-j
+;; TODO: xref-pop-marker-stack で戻れる (M-,)
+
+(use-package php-mode)
+
+(ac-config-default)
+
+(use-package helm
+  :bind (("M-x" . helm-M-x)
+         ("C-x b" . helm-mini)
+         ("C-x C-f" . helm-find-files)
+         ("C-c y"   . helm-show-kill-ring)
+         ("C-c m"   . helm-man-woman)
+         ("C-c o"   . helm-occur)
+         :map helm-map
+         ("C-h" . delete-backward-char)
+         :map helm-find-files-map
+         ("C-h" . delete-backward-char))
+  :init
+  (custom-set-faces
+   '(helm-header           ((t (:background "#3a3a3a" :underline nil))))
+   '(helm-source-header    ((t (:background "gray16" :foreground "gray64" :slant italic))))
+   '(helm-candidate-number ((t (:foreground "#00afff"))))
+   '(helm-selection        ((t (:background "#005f87" :weight normal))))
+   '(helm-match            ((t (:foreground "darkolivegreen3")))))
+  :config
+  (helm-mode 1))
+
+;;(use-package helm-flycheck)
+;; (global-flycheck-mode)
+
 
 (use-package magit
   :bind
@@ -95,72 +115,32 @@
    ("C-x M-g" . magit-dispatch-popup))
   )
 
-;;; 現在行を目立たせる
-(global-hl-line-mode)
-
-(require 'win-switch)
-;;; 0.75秒間受け付けるタイマー
-(setq win-switch-idle-time 0.75)
-(win-switch-setup-keys-ijkl "\C-xo")
-
-(require 'neotree)
-(global-set-key [f8] 'neotree-toggle)
-;; 隠しファイルをデフォルトで表示
-(setq neo-show-hidden-files t)
-;; キーバインドをシンプルにする
-;;(setq neo-keymap-style 'concise)
-(setq neo-smart-open t)
-;; neotree でファイルを新規作成した後、自動的にファイルを開く
-(setq neo-create-file-auto-open t)
-
-(require 'migemo)
-(setq migemo-command "cmigemo")
-(setq migemo-options '("-q" "--emacs"))
-
-;; 辞書ファイルを環境に合わせて設定してください！
-(setq migemo-dictionary "/usr/share/cmigemo/utf-8/migemo-dict")
-
-(setq migemo-user-dictionary nil)
-(setq migemo-regex-dictionary nil)
-(setq migemo-coding-system 'utf-8-unix)
-(migemo-init)
-
-;; 日本語
-;;先にかかないとだめかも
-(set-language-environment "Japanese")
-;; テキストエンコーディングとしてUTF-8を優先使用
-(prefer-coding-system 'utf-8)
-
-;; mozc
-;;(when (require 'mozc nil t)
-;;  (setq default-input-method "japanese-mozc"))
-(use-package mozc
-  :bind  (("C-j" . mozc-mode)
-          ("C-\\" . mozc-mode))
-  :config  (setq default-input-method "japanese-mozc")
+;; バッファの同一ファイル名を区別する(デフォルトパッケージ)
+(use-package uniquify
+  :straight nil
+  :config
+  (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+  (setq uniquify-ignore-buffers-re "*[^*]+*")
   )
 
-(require 'helm-config)
-(helm-mode 1)
+(bind-key "M-g" 'goto-line)
+(bind-key "M-q" 'query-replace-regexp)
+(bind-key "M-r" 'replace-regexp)
+(bind-key "M-e" 'eval-buffer)
+(bind-key "M-f" 'grep-find)
 
-
-;;
-;; Auto Complete
-;;
-(require 'auto-complete-config)
-(ac-config-default)
-(add-to-list 'ac-modes 'text-mode)         ;; text-modeでも自動的に有効にする
-(add-to-list 'ac-modes 'fundamental-mode)  ;; fundamental-mode
-(add-to-list 'ac-modes 'org-mode)
-(add-to-list 'ac-modes 'yatex-mode)
-(ac-set-trigger-key "TAB")
-(setq ac-use-menu-map t)       ;; 補完メニュー表示時にC-n/C-pで補完候補選択
-;;(setq ac-use-fuzzy t)          ;; 曖昧マッチ fuzzy.elが必要
+;;; 現在行を目立たせる
+;; (global-hl-line-mode)
 
 ;;
 ;;
 ;;
-(setq-default tab-width 4)
+;; タブにスペースを使用する
+(setq-default tab-width 4 indent-tabs-mode nil)
+;cperlmodeの変数でもよいかも
+
+;; diffのバッファを上下ではなく左右に並べる
+(setq ediff-split-window-function 'split-window-horizontally)
 
 ;; 起動時のメッセージを非表示
 (setq inhibit-startup-message t)
@@ -171,19 +151,15 @@
 ;; 反対側のウィンドウにいけるように
 (setq windmove-wrap-around t)
 
-(defun my-c-c++-mode-init ()
-  (setq c-basic-offset 4)
-  (setq tab-width 4)
-  )
-(add-hook 'c-mode-hook 'my-c-c++-mode-init)
-(add-hook 'c++-mode-hook 'my-c-c++-mode-init)
 
-;;perl-mode の代わりに cperl-mode を使用
-;; (defalias 'perl-mode 'cperl-mode)
-(setq cperl-indent-level 4)
-(setq cperl-highlight-variables-indiscriminately t)
-(setq cperl-merge-trailing-else nil)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Ctrl-x p で逆向きへのウィンドウ移動
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key "\C-xp" (lambda () (interactive) (other-window -1)))
 
+(add-hook 'go-mode-hook 'flycheck-mode)
+(add-hook 'perl-mode-hook 'flycheck-mode)
 
-;; diffのバッファを上下ではなく左右に並べる
-(setq ediff-split-window-function 'split-window-horizontally)
+;; 行番号を表示
+(require 'linum)
+(global-linum-mode)
